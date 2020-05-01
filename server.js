@@ -8,13 +8,12 @@ const signin = require('./controllers/signin');
 const profile = require('./controllers/profile');
 const image = require('./controllers/image');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 const db = knex({
   client: 'pg',
   connection: {
-    host : '127.0.0.1', //localhost
-    user : 'mac',
-    password : '',
-    database : 'smart-brain'
+	  connectionString: process.env.DATABASE_URL,
+	  ssl: true
   }
 });
 
@@ -23,13 +22,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get('/', (req, res) => {res.send(database.users) })
+app.get('/', (req, res) => { res.send(db.users) })
 app.post('/signin', signin.handleSignin(db, bcrypt)) //two ways of syntax signin and register are the same: in signin.js function looks like this (db, bcrypt) => (req, res) {}
 app.post('/register', (req, res) => { register.handleRegister(req, res, db, bcrypt) }) // this is pretty much the same as signin, just two diff ways of syntax preferences
 app.get('/profile/:id', (req,res) => { profile.handleProfileGet(req, res, db) })
 app.put('/image', (req, res) => { image.handleImage(req, res, db) })
 app.post('/imageurl', (req, res) => { image.handleApiCall(req, res)})
 
-app.listen(3000, () => {
-	console.log('app is running on port 3000');
+app.listen(process.env.PORT || 3000, () => {
+	console.log(`app is running on port ${process.env.PORT}`);
 })
